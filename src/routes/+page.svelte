@@ -52,7 +52,7 @@
             gameCanvas.width = rect.width;
             gameCanvas.height = rect.height;
             
-            render(gameFunctions, dt, pressedKey);
+            render(gameFunctions, dt, pressedKey, rect.width, rect.height);
         }
 
         lastFrameTime = currentTime;
@@ -82,6 +82,7 @@
     }
     #gameCanvas {
         flex-grow:1;
+        flex-shrink: 1;
         border: 10px solid black;
         margin:20px;
     }
