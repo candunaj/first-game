@@ -5,7 +5,7 @@
 
     let gameCanvas = $state<HTMLCanvasElement | null>(null);
     let fps = $state<number>(0);
-    let pressedKey = $state<string | null>(null);
+    let pressedKeys = $state<Set<string>>(new Set());
     
     let lastFrameTime = 0;
     let frameCount = 0;
@@ -16,11 +16,11 @@
     onMount(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             e.preventDefault();
-            pressedKey = e.code;
+            pressedKeys.add(e.code);
         };
         
-        const handleKeyUp = () => {
-            pressedKey = null;
+        const handleKeyUp = (e: KeyboardEvent) => {
+            pressedKeys.delete(e.code);
         };
         
         window.addEventListener('keydown', handleKeyDown);
@@ -52,7 +52,7 @@
             gameCanvas.width = rect.width;
             gameCanvas.height = rect.height;
             
-            render(gameFunctions, dt, pressedKey, rect.width, rect.height);
+            render(gameFunctions, dt, pressedKeys, rect.width, rect.height);
         }
 
         lastFrameTime = currentTime;

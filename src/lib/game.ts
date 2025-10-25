@@ -3,7 +3,7 @@ import type { Game } from "./types";
 export function render(
   game: Game,
   dt: number,
-  keyCode: string | null,
+  pressedKeys: Set<string>,
   width: number,
   height: number
 ) {}
