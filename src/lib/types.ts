@@ -2,6 +2,7 @@ export type Game = {
   drawCircle(circle: Circle): void;
   drawRectangle(rectangle: Rectangle): void;
   drawText(text: Text): void;
+  log(message: string): void;
 };
 
 export type Color =
@@ -118,7 +119,8 @@ function drawText(canvas: HTMLCanvasElement, text: Text) {
 }
 
 export function createGameFunctions(
-  canvas: HTMLCanvasElement | null
+  canvas: HTMLCanvasElement | null,
+  log: (message: string) => void
 ): Game | null {
   if (!canvas) {
     return null;
@@ -127,5 +129,6 @@ export function createGameFunctions(
     drawCircle: (circle: Circle) => drawCircle(canvas, circle),
     drawRectangle: (rectangle: Rectangle) => drawRectangle(canvas, rectangle),
     drawText: (text: Text) => drawText(canvas, text),
+    log: log,
   };
 }

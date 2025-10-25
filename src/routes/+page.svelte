@@ -13,8 +13,17 @@
     let lastFrameTime = 0;
     let frameCount = 0;
     let fpsUpdateTime = 0;
+    let debugMessages: string[] = $state([]);
 
-    let gameFunctions = $derived(createGameFunctions(gameCanvas));
+    function log(message: string) {
+        debugMessages.push(message);
+        // Keep only the last 100 messages to avoid memory issues
+        if (debugMessages.length > 100) {
+            debugMessages.shift();
+        }
+    }
+
+    let gameFunctions = $derived(createGameFunctions(gameCanvas, log));
 
     function resizeCanvas(){
         if(gameCanvas){
@@ -40,7 +49,7 @@
         window.addEventListener('keyup', handleKeyUp);
         
         const {width, height} = resizeCanvas();
-        init((text)=>headerText = text, width, height);
+        init((text)=>headerText = text, width, height, log);
         if(gameFunctions){
             render(gameFunctions, 0, pressedKeys, width, height);
         }
@@ -82,7 +91,7 @@
     
     function startGame() {
         const {width, height} = resizeCanvas();
-        init((text)=>headerText = text, width, height);
+        init((text)=>headerText = text, width, height, log);
         gameStarted = true;
         hasEverStarted = true;
         lastFrameTime = 0;
@@ -101,9 +110,10 @@
         
         // Reset the game
         hasEverStarted = false;
+        debugMessages = [];
         if (gameCanvas && gameFunctions) {
             const {width, height} = resizeCanvas();
-            init((text)=>headerText = text, width, height);
+            init((text)=>headerText = text, width, height, log);
             render(gameFunctions, 0, pressedKeys, width, height);
         }
         lastFrameTime = 0;
@@ -166,8 +176,8 @@
                 </button>
             {/if}
         </div>
+        <div class="fps-counter">FPS: {fps}</div>
     </div>
-    <div class="fps-counter">FPS: {fps}</div>
     <div class="canvas-wrapper">
         <canvas id="gameCanvas" bind:this={gameCanvas}></canvas>
         {#if hasEverStarted && !gameStarted}
@@ -181,20 +191,32 @@
             </div>
         {/if}
     </div>
+    <div class="debug-panel">
+        <div class="debug-header">Debug Console</div>
+        <div class="debug-messages">
+            {#each debugMessages.toReversed() as message, i}
+                <div class="debug-message">{debugMessages.length - i}: {message}</div>
+            {/each}
+        </div>
+    </div>
 </div>
 <style>
     .game-container {
-        position: relative;
-        z-index: 1;
         flex-grow: 1;
+        flex-shrink:0;
+        overflow:auto;
         display: flex;
         flex-direction: column;
+        gap: 20px;
+        height: 100%;
+        padding-left: 20px;
+        padding-right: 20px;
     }
 
     .header-container {
+        margin-top: 20px;
         display: flex;
         align-items: center;
-        margin: 20px;
         padding: 15px 20px;
         gap: 20px;
         background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
@@ -293,7 +315,9 @@
     
     .canvas-wrapper {
         flex-grow: 1;
-        margin: 20px;
+        flex-shrink:1;
+        overflow:auto;
+        min-height: 0px;
         padding: 8px;
         background: linear-gradient(135deg, #555 0%, #333 25%, #555 50%, #333 75%, #555 100%);
         background-size: 16px 16px;
@@ -312,6 +336,7 @@
     
     #gameCanvas {
         flex-grow: 1;
+        min-height: 10px;
         width: 100%;
         height: 100%;
         background: #87CEEB;
@@ -352,5 +377,50 @@
             inset 2px 2px 0 rgba(255, 255, 255, 0.1),
             inset -2px -2px 0 rgba(0, 0, 0, 0.5),
             8px 8px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    .debug-panel {
+        height: 100px;
+        margin-bottom: 20px;
+        background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+        border: 3px solid #000;
+        border-top-color: #555;
+        border-left-color: #555;
+        border-right-color: #1a1a1a;
+        border-bottom-color: #1a1a1a;
+        box-shadow: 
+            inset 2px 2px 0 rgba(255, 255, 255, 0.1),
+            inset -2px -2px 0 rgba(0, 0, 0, 0.5),
+            4px 4px 0 rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        flex-shrink:0;
+        flex-grow:0;
+    }
+
+    .debug-header {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        font-size: 14px;
+        color: #55ff55;
+        padding: 8px 12px;
+        background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+        border-bottom: 2px solid #000;
+        text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+    }
+
+    .debug-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 12px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+    }
+
+    .debug-message {
+        color: #55ff55;
+        margin: 2px 0;
+        text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
     }
 </style>

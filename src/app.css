@@ -30,6 +30,7 @@ body {
     );
   background-size: 120px 120px;
   position: relative;
+  overflow: auto;
 }
 
 body::before {

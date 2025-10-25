@@ -3,7 +3,8 @@ import type { Game } from "./types";
 export function init(
   setHeaderText: (text: string) => void,
   width: number,
-  height: number
+  height: number,
+  log: (message: string) => void
 ) {
 }
 export function render(
