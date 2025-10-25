@@ -9,4 +9,50 @@ body {
 body {
   display: flex;
   flex-direction: column;
+  background: linear-gradient(
+      0deg,
+      transparent 0%,
+      transparent 70%,
+      #5c8b3d 70%,
+      #7cb747 75%,
+      #5c8b3d 80%,
+      #7cb747 85%,
+      #5c8b3d 90%,
+      #7cb747 100%
+    ),
+    linear-gradient(
+      135deg,
+      #8b6f47 0%,
+      #654321 25%,
+      #8b6f47 50%,
+      #654321 75%,
+      #8b6f47 100%
+    );
+  background-size: 120px 120px;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 12px,
+      rgba(0, 0, 0, 0.15) 12px,
+      rgba(0, 0, 0, 0.15) 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 12px,
+      rgba(0, 0, 0, 0.15) 12px,
+      rgba(0, 0, 0, 0.15) 24px
+    );
+  pointer-events: none;
+  z-index: 0;
 }
