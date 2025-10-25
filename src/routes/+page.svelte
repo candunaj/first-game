@@ -7,6 +7,7 @@
     let fps = $state<number>(0);
     let pressedKeys = $state<Set<string>>(new Set());
     let gameStarted = $state<boolean>(false);
+    let hasEverStarted = $state<boolean>(false);
     let animationFrameId: number | null = null;
     let headerText = $state<string>("");
     let lastFrameTime = 0;
@@ -83,6 +84,7 @@
         const {width, height} = resizeCanvas();
         init((text)=>headerText = text, width, height);
         gameStarted = true;
+        hasEverStarted = true;
         lastFrameTime = 0;
         frameCount = 0;
         fpsUpdateTime = 0;
@@ -90,12 +92,40 @@
     }
     
     function resetGame() {
-        const {width, height} = resizeCanvas();
-        init((text)=>headerText = text, width, height);
+        // Pause the game first
+        gameStarted = false;
+        if (animationFrameId !== null) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+        
+        // Reset the game
+        hasEverStarted = false;
+        if (gameCanvas && gameFunctions) {
+            const {width, height} = resizeCanvas();
+            init((text)=>headerText = text, width, height);
+            render(gameFunctions, 0, pressedKeys, width, height);
+        }
         lastFrameTime = 0;
         frameCount = 0;
         fpsUpdateTime = 0;
         fps = 0;
+    }
+    
+    function togglePause() {
+        if (gameStarted) {
+            // Pause the game
+            gameStarted = false;
+            if (animationFrameId !== null) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        } else {
+            // Resume the game
+            gameStarted = true;
+            lastFrameTime = 0; // Reset to avoid large delta time
+            animationFrameId = requestAnimationFrame(loop);
+        }
     }
 </script>
 
@@ -103,24 +133,53 @@
     <div class="header-container">
         <h1>{headerText}</h1>
         <div class="controls">
-            <button 
-                onclick={startGame} 
-                disabled={gameStarted}
-                class="minecraft-btn"
-            >
-                Start
-            </button>
-            <button 
-                onclick={resetGame}
-                class="minecraft-btn"
-            >
-                Reset
-            </button>
+            {#if !hasEverStarted}
+                <button 
+                    onclick={startGame}
+                    class="minecraft-btn"
+                >
+                    Start
+                </button>
+            {/if}
+            {#if hasEverStarted && gameStarted}
+                <button 
+                    onclick={togglePause}
+                    class="minecraft-btn"
+                >
+                    Pause
+                </button>
+            {/if}
+            {#if hasEverStarted && !gameStarted}
+                <button 
+                    onclick={togglePause}
+                    class="minecraft-btn"
+                >
+                    Resume
+                </button>
+            {/if}
+            {#if hasEverStarted}
+                <button 
+                    onclick={resetGame}
+                    class="minecraft-btn"
+                >
+                    Reset
+                </button>
+            {/if}
         </div>
     </div>
     <div class="fps-counter">FPS: {fps}</div>
     <div class="canvas-wrapper">
         <canvas id="gameCanvas" bind:this={gameCanvas}></canvas>
+        {#if hasEverStarted && !gameStarted}
+            <div class="pause-overlay">
+                <div class="pause-text">Game Paused</div>
+            </div>
+        {/if}
+        {#if !hasEverStarted}
+            <div class="pause-overlay">
+                <div class="pause-text">Start the game to play</div>
+            </div>
+        {/if}
     </div>
 </div>
 <style>
@@ -248,6 +307,7 @@
             inset -3px -3px 0 rgba(255, 255, 255, 0.1),
             6px 6px 0 rgba(0, 0, 0, 0.4);
         display: flex;
+        position: relative;
     }
     
     #gameCanvas {
@@ -257,5 +317,40 @@
         background: #87CEEB;
         image-rendering: pixelated;
         image-rendering: crisp-edges;
+    }
+    
+    .pause-overlay {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 100;
+    }
+    
+    .pause-text {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        font-size: 48px;
+        color: #ffffff;
+        text-shadow: 
+            4px 4px 0 #3f3f3f,
+            3px 3px 0 rgba(0, 0, 0, 0.8);
+        letter-spacing: 3px;
+        background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+        padding: 30px 50px;
+        border: 4px solid #000;
+        border-top-color: #555;
+        border-left-color: #555;
+        border-right-color: #1a1a1a;
+        border-bottom-color: #1a1a1a;
+        box-shadow: 
+            inset 2px 2px 0 rgba(255, 255, 255, 0.1),
+            inset -2px -2px 0 rgba(0, 0, 0, 0.5),
+            8px 8px 0 rgba(0, 0, 0, 0.5);
     }
 </style>
